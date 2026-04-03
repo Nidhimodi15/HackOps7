@@ -1,0 +1,752 @@
+import { useState, useEffect, useRef } from "react";
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { Card } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Upload as UploadIcon, FileText, CheckCircle, AlertCircle, Clock, Calendar } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
+import { toast } from "sonner";
+
+interface UploadedFile {
+  id: string;
+  name: string;
+  uploadTime: string;
+  uploadedAt?: string;
+  status: "processing" | "completed" | "error";
+  accuracy: number;
+  progress: number;
+  extractedData?: {
+    // Basic extraction
+    invoiceNumber: string;
+    vendorName: string;
+    invoiceAmount: number;
+    invoiceDate: string;
+    gstNumbers: string[];
+    gstRate?: string;
+    hsnNumber?: string;
+    ocrConfidence: number;
+
+    // Enhanced extraction
+    hsnSacCodes?: string[];
+    itemDescriptions?: string[];
+    quantities?: number[];
+
+    // Compliance scoring
+    complianceScore?: number;
+    complianceStatus?: string;
+    checksPassedCount?: number;
+    totalChecksCount?: number;
+    riskScore?: number;
+    riskLevel?: string;
+
+    // Validation results
+    gstValidations?: Array<{ valid: boolean, status: string }>;
+    hsnValidations?: Array<{ is_correct: boolean, hsn_code: string }>;
+    duplicateCheck?: Array<any>;
+    arithmeticCheck?: { overall_accurate: boolean };
+    priceAnalysis?: Array<{
+      item: string;
+      billed_price: number;
+      variance_percent: number;
+      is_outlier: boolean;
+    }>;
+
+    // GST Verification (Government API)
+    gstVerification?: Array<{
+      success: boolean;
+      is_valid: boolean;
+      is_active: boolean;
+      gst_number: string;
+      legal_name?: string;
+      trade_name?: string;
+      status?: string;
+      error?: string;
+      vendor_name_match?: { match: boolean; matched_with?: string; reason?: string };
+    }>;
+
+    // ML results
+    mlPrediction?: {
+      is_anomaly: boolean;
+      confidence: number;
+    };
+
+    // Anomalies summary
+    anomaliesDetected?: string[];
+  };
+  error?: string;
+}
+
+const Upload = () => {
+  const [files, setFiles] = useState<UploadedFile[]>([]);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+
+  // Load past invoices from MongoDB on component mount
+  useEffect(() => {
+    loadInvoiceHistory();
+  }, []);
+
+  const loadInvoiceHistory = async () => {
+    try {
+      const response = await fetch('http://localhost:8000/api/invoices/history?limit=20');
+      const data = await response.json();
+
+      if (data.success && data.invoices) {
+        const historicalFiles: UploadedFile[] = data.invoices.map((inv: any) => ({
+          id: inv._id || inv.id,
+          name: inv.filename || inv.fileName || 'invoice.pdf',
+          uploadTime: inv.uploadDate ? new Date(inv.uploadDate).toLocaleString('en-IN') : 'Unknown',
+          uploadedAt: inv.uploadDate,
+          status: "completed",
+          accuracy: inv.ocrConfidence || inv.ocr_confidence || 0,
+          progress: 100,
+          extractedData: {
+            invoiceNumber: inv.invoiceNumber || inv.invoice_number || 'Unknown',
+            vendorName: inv.vendorName || inv.vendor_name || 'Unknown',
+            invoiceAmount: inv.totalAmount || inv.total_amount || 0,
+            invoiceDate: inv.invoiceDate || inv.invoice_date || 'Unknown',
+            gstNumbers: inv.allGstNumbers || inv.all_gst_numbers || inv.gst_numbers || [],
+            gstRate: inv.gstRate || inv.gst_rate || 'Unknown',
+            hsnNumber: inv.hsnNumber || inv.hsn_number || 'Unknown',
+            ocrConfidence: inv.ocrConfidence || inv.ocr_confidence || 0,
+            // Load validation results from compliance data
+            gstValidations: inv.complianceResults?.gst_validations || inv.compliance_results?.gst_validations || [],
+            hsnValidations: inv.complianceResults?.hsn_validations || inv.compliance_results?.hsn_validations || [],
+            duplicateCheck: inv.complianceResults?.duplicate_check || inv.compliance_results?.duplicate_check || [],
+            arithmeticCheck: inv.complianceResults?.arithmetic_check || inv.compliance_results?.arithmetic_check || { overall_accurate: false },
+            complianceScore: inv.complianceResults?.compliance_score || inv.compliance_results?.compliance_score || 0,
+            complianceStatus: inv.complianceResults?.compliance_status || inv.compliance_results?.compliance_status || 'Unknown',
+            riskScore: inv.complianceResults?.risk_score || inv.compliance_results?.risk_score || 0,
+            riskLevel: inv.complianceResults?.risk_level || inv.compliance_results?.risk_level || 'Unknown',
+            // Add GST verification results
+            gstVerification: inv.gstVerification || inv.gst_verification || [],
+            // Add anomalies
+            anomaliesDetected: inv.anomalies?.map((a: any) => a.anomaly_type || a.anomalyType) || [],
+          }
+        }));
+        console.log('📥 Loaded invoice history:', historicalFiles.length, 'invoices');
+        setFiles(historicalFiles);
+      } else {
+        console.log('⚠️ No invoices found in response');
+      }
+    } catch (error) {
+      console.error('❌ Failed to load invoice history:', error);
+    } finally {
+      setIsLoadingHistory(false);
+    }
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const droppedFiles = Array.from(e.dataTransfer.files);
+    handleFiles(droppedFiles);
+  };
+
+  const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files) {
+      handleFiles(Array.from(e.target.files));
+      // Reset file input to allow uploading the same file again
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleFiles = async (uploadedFiles: File[]) => {
+    const newFiles: UploadedFile[] = uploadedFiles.map((file, index) => ({
+      id: `${Date.now()}-${index}`,
+      name: file.name,
+      uploadTime: "Just now",
+      uploadedAt: new Date().toISOString(),
+      status: "processing",
+      accuracy: 0,
+      progress: 0,
+    }));
+
+    setFiles([...newFiles, ...files]);
+    toast.success(`${uploadedFiles.length} file(s) uploaded successfully`);
+
+    // REAL API CALL instead of simulation
+    for (let i = 0; i < uploadedFiles.length; i++) {
+      const file = uploadedFiles[i];
+      const fileId = newFiles[i].id;
+
+      try {
+        // Update progress to show processing
+        setFiles(prev => prev.map(f =>
+          f.id === fileId ? { ...f, progress: 50 } : f
+        ));
+
+        // Call REAL FINTEL AI API
+        const formData = new FormData();
+        formData.append('file', file);
+
+        const response = await fetch('http://localhost:8000/api/invoices/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
+
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+
+        const result = await response.json();
+        console.log('API Response:', result);
+
+        if (result.success) {
+          // Update with COMPLETE extracted data including all compliance features
+          setFiles(prev => prev.map(f =>
+            f.id === fileId ? {
+              ...f,
+              progress: 100,
+              status: "completed",
+              accuracy: result.data.ocrConfidence || 0, // REAL accuracy from OCR
+              extractedData: {
+                // Basic extraction
+                invoiceNumber: result.data.invoiceNumber || 'Unknown',
+                vendorName: result.data.vendorName || 'Unknown',
+                invoiceAmount: result.data.invoiceAmount || 0,
+                invoiceDate: result.data.invoiceDate || 'Unknown',
+                gstNumbers: result.data.gstNumbers || [],
+                gstRate: result.data.gstRate || result.data.gst_rate || 'Unknown',
+                hsnNumber: result.data.hsnNumber || result.data.hsn_number || 'Unknown',
+                ocrConfidence: result.data.ocrConfidence || 0,
+
+                // Enhanced extraction
+                hsnSacCodes: result.data.hsnSacCodes || [],
+                itemDescriptions: result.data.itemDescriptions || [],
+                quantities: result.data.quantities || [],
+
+                // Compliance scoring
+                complianceScore: result.data.complianceScore || 0,
+                complianceStatus: result.data.complianceStatus || 'Unknown',
+                checksPassedCount: result.data.checksPassedCount || 0,
+                totalChecksCount: result.data.totalChecksCount || 12,
+                riskScore: result.data.riskScore || 0,
+                riskLevel: result.data.riskLevel || 'Unknown',
+
+                // Validation results
+                gstValidations: result.data.gstValidations || [],
+                gstVerification: result.data.gstVerification || [],
+                hsnValidations: result.data.hsnValidations || [],
+                duplicateCheck: result.data.duplicateCheck || [],
+                arithmeticCheck: result.data.arithmeticCheck || { overall_accurate: false },
+                priceAnalysis: result.data.priceAnalysis || [],
+
+                // ML results
+                mlPrediction: result.data.mlPrediction || { is_anomaly: false, confidence: 0 },
+
+                // Anomalies summary
+                anomaliesDetected: result.data.anomaliesDetected || []
+              }
+            } : f
+          ));
+
+          toast.success(`${file.name} processed successfully!`);
+        } else {
+          // Handle error
+          setFiles(prev => prev.map(f =>
+            f.id === fileId ? {
+              ...f,
+              progress: 100,
+              status: "error",
+              error: result.error || "Processing failed"
+            } : f
+          ));
+
+          toast.error(`Failed to process ${file.name}`);
+        }
+
+      } catch (error) {
+        console.error('Upload error:', error);
+        console.error('Error details:', JSON.stringify(error, null, 2));
+
+        setFiles(prev => prev.map(f =>
+          f.id === fileId ? {
+            ...f,
+            progress: 100,
+            status: "error",
+            error: `Network error: ${error.message || 'Unknown error'}`
+          } : f
+        ));
+
+        toast.error(`Network error uploading ${file.name}: ${error.message || 'Unknown error'}`);
+      }
+    }
+  };
+
+  const getStatusIcon = (status: UploadedFile["status"]) => {
+    switch (status) {
+      case "completed":
+        return <CheckCircle className="h-5 w-5 text-green-500" />;
+      case "error":
+        return <AlertCircle className="h-5 w-5 text-red-500" />;
+      case "processing":
+        return <Clock className="h-5 w-5 text-blue-500" />;
+    }
+  };
+
+  const showDetails = (file: UploadedFile) => {
+    if (file.extractedData) {
+      const data = file.extractedData;
+
+      // Create detailed compliance report
+      const complianceDetails = `
+🤖 FINTEL AI - COMPLETE COMPLIANCE REPORT
+==========================================
+
+📋 BASIC EXTRACTION:
+• Invoice Number: ${data.invoiceNumber}
+• Vendor: ${data.vendorName}
+• Amount: ₹${data.invoiceAmount?.toLocaleString() || 'Not found'}
+• Date: ${data.invoiceDate}
+• GST Numbers: ${data.gstNumbers?.join(', ') || 'None'}
+
+📊 COMPLIANCE SCORING:
+• Overall Score: ${data.complianceScore?.toFixed(1) || 0}%
+• Status: ${data.complianceStatus || 'Unknown'}
+• Checks Passed: ${data.checksPassedCount || 0}/${data.totalChecksCount || 12}
+• Risk Level: ${data.riskLevel || 'Unknown'}
+
+🔍 ENHANCED EXTRACTION:
+• HSN/SAC Codes: ${data.hsnSacCodes?.join(', ') || 'None'}
+• Items: ${data.itemDescriptions?.join(', ') || 'None'}
+• OCR Confidence: ${data.ocrConfidence?.toFixed(1) || 0}%
+
+🚨 ANOMALIES DETECTED:
+${data.anomaliesDetected?.length > 0 ?
+          data.anomaliesDetected.map(a => `• ${a}`).join('\n') :
+          '• No anomalies detected'}
+
+✅ VALIDATION RESULTS:
+• GST Validation: ${data.gstValidations?.length > 0 ?
+          data.gstValidations.map(g => g.valid ? '✅ Valid' : '❌ Invalid').join(', ') :
+          'Not checked'}
+• HSN Validation: ${data.hsnValidations?.length > 0 ?
+          data.hsnValidations.map(h => h.is_correct ? '✅ Correct' : '❌ Incorrect').join(', ') :
+          'Not checked'}
+• Arithmetic Check: ${data.arithmeticCheck?.overall_accurate ? '✅ Accurate' : '❌ Error detected'}
+• Duplicate Check: ${data.duplicateCheck?.length > 0 ? '🚨 Duplicate found' : '✅ No duplicates'}
+
+💰 PRICE ANALYSIS:
+${data.priceAnalysis?.length > 0 ?
+          data.priceAnalysis.map(p =>
+            `• ${p.item}: ₹${p.billed_price} (${p.variance_percent > 0 ? '+' : ''}${p.variance_percent?.toFixed(1)}% vs market)`
+          ).join('\n') :
+          '• No price analysis available'}
+
+🎯 RISK ASSESSMENT:
+• Risk Score: ${data.riskScore || 0}/100
+• ML Prediction: ${data.mlPrediction?.is_anomaly ? '🚨 Anomaly detected' : '✅ Normal pattern'}
+• Confidence: ${data.mlPrediction?.confidence?.toFixed(1) || 0}%
+
+Processed by: FINTEL AI v2.0 Complete Compliance System
+      `;
+
+      alert(complianceDetails);
+    } else if (file.error) {
+      alert(`❌ Processing Error: ${file.error}`);
+    } else {
+      alert("⏳ Still processing... Please wait.");
+    }
+  };
+
+  const getStatusText = (status: UploadedFile["status"]) => {
+    switch (status) {
+      case "completed":
+        return "Completed";
+      case "error":
+        return "Error";
+      case "processing":
+        return "Processing";
+    }
+  };
+
+  return (
+    <DashboardLayout>
+      <div className="space-y-6">
+        <div>
+          <h1 className="text-3xl font-bold mb-2">Upload Invoices</h1>
+          <p className="text-muted-foreground">
+            Upload PDF, PNG, or JPEG invoices for AI-powered extraction and compliance validation
+          </p>
+        </div>
+
+        {/* Upload Zone with Latest Result */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {/* Left: Upload Box */}
+          <Card className="p-12 border-2 border-dashed hover:border-primary transition-colors">
+            <div
+              className="flex flex-col items-center justify-center space-y-4"
+              onDrop={handleDrop}
+              onDragOver={(e) => e.preventDefault()}
+            >
+              <div className="p-6 rounded-full bg-primary/10">
+                <UploadIcon className="h-12 w-12 text-primary" />
+              </div>
+              <div className="text-center space-y-2">
+                <h3 className="text-xl font-semibold">
+                  Drop invoices here or click to browse
+                </h3>
+                <p className="text-sm text-muted-foreground">
+                  Supports PDF, PNG, JPEG • Max 20MB per file
+                </p>
+              </div>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept=".pdf,.png,.jpg,.jpeg"
+                className="hidden"
+                id="file-upload"
+                onChange={handleFileInput}
+              />
+              <label htmlFor="file-upload">
+                <Button asChild>
+                  <span>Browse Files</span>
+                </Button>
+              </label>
+            </div>
+          </Card>
+
+          {/* Right: Latest Invoice Summary */}
+          <Card className="p-6">
+            {files.length > 0 && files[0].status === "completed" && files[0].extractedData ? (
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="text-lg font-semibold">Latest Invoice</h3>
+                  <Badge variant="default" className="bg-green-100 text-green-800">
+                    <CheckCircle className="h-3 w-3 mr-1" />
+                    Processed
+                  </Badge>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2 text-sm">
+                    <FileText className="h-4 w-4 text-muted-foreground" />
+                    <span className="font-medium">{files[0].name}</span>
+                  </div>
+
+                  <Card className="p-4 border-l-4 border-l-primary">
+                    <h4 className="font-semibold text-base mb-3">Invoice Summary</h4>
+                    <div className="space-y-2.5">
+                      {/* Vendor */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground min-w-[80px]">Vendor</span>
+                          <span className="font-semibold text-sm">{files[0].extractedData.vendorName}</span>
+                        </div>
+                        {files[0].extractedData.vendorName !== 'Unknown' ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Valid
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Missing
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Invoice Number */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground min-w-[80px]">Invoice #</span>
+                          <span className="font-semibold text-sm">{files[0].extractedData.invoiceNumber}</span>
+                        </div>
+                        {files[0].extractedData.invoiceNumber !== 'Unknown' ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Valid
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Verify
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Amount */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground min-w-[80px]">Amount</span>
+                          <span className="font-semibold text-sm">
+                            {String(files[0].extractedData.invoiceAmount) !== 'Unknown' && files[0].extractedData.invoiceAmount !== 0
+                              ? `₹${files[0].extractedData.invoiceAmount}`
+                              : '—'}
+                          </span>
+                        </div>
+                        {String(files[0].extractedData.invoiceAmount) !== 'Unknown' && files[0].extractedData.invoiceAmount !== 0 ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Valid
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Missing
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Date */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground min-w-[80px]">Date</span>
+                          <span className="font-semibold text-sm">{files[0].extractedData.invoiceDate !== 'Unknown' ? files[0].extractedData.invoiceDate : '—'}</span>
+                        </div>
+                        {files[0].extractedData.invoiceDate !== 'Unknown' ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Valid
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Missing
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* GST Number */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground min-w-[80px]">GST</span>
+                          <span className="font-semibold text-sm">
+                            {files[0].extractedData.gstNumbers && files[0].extractedData.gstNumbers.length > 0
+                              ? files[0].extractedData.gstNumbers[0]
+                              : '—'}
+                          </span>
+                        </div>
+                        {files[0].extractedData.gstNumbers && files[0].extractedData.gstNumbers.length > 0 ? (
+                          files[0].extractedData.gstVerification && files[0].extractedData.gstVerification[0]?.is_active ? (
+                            <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Verified
+                            </Badge>
+                          ) : files[0].extractedData.gstVerification && files[0].extractedData.gstVerification[0]?.is_valid === false ? (
+                            <Badge variant="destructive" className="bg-red-100 text-red-800 text-xs">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Invalid
+                            </Badge>
+                          ) : files[0].extractedData.gstVerification && files[0].extractedData.gstVerification[0]?.success === false ? (
+                            <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Not Found
+                            </Badge>
+                          ) : (
+                            <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Not Found
+                            </Badge>
+                          )
+                        ) : (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Missing
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* Vendor Name Match (GST vs Invoice) */}
+                      {files[0].extractedData.gstVerification && files[0].extractedData.gstVerification[0]?.success && (
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm text-muted-foreground min-w-[80px]">Owner</span>
+                            <span className="font-semibold text-sm truncate max-w-[180px]">
+                              {files[0].extractedData.gstVerification[0]?.legal_name || '—'}
+                            </span>
+                          </div>
+                          {files[0].extractedData.gstVerification[0]?.vendor_name_match?.match ? (
+                            <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                              <CheckCircle className="h-3 w-3 mr-1" />
+                              Matched
+                            </Badge>
+                          ) : (
+                            <Badge variant="destructive" className="bg-red-100 text-red-800 text-xs">
+                              <AlertCircle className="h-3 w-3 mr-1" />
+                              Name Mismatch
+                            </Badge>
+                          )}
+                        </div>
+                      )}
+
+                      {/* GST Rate */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground min-w-[80px]">GST Rate</span>
+                          <span className="font-semibold text-sm">
+                            {files[0].extractedData.gstRate && files[0].extractedData.gstRate !== 'Unknown'
+                              ? files[0].extractedData.gstRate
+                              : '—'}
+                          </span>
+                        </div>
+                        {files[0].extractedData.gstRate && files[0].extractedData.gstRate !== 'Unknown' ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Found
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Missing
+                          </Badge>
+                        )}
+                      </div>
+
+                      {/* HSN Number */}
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-muted-foreground min-w-[80px]">HSN</span>
+                          <span className="font-semibold text-sm">
+                            {files[0].extractedData.hsnNumber && files[0].extractedData.hsnNumber !== 'Unknown'
+                              ? files[0].extractedData.hsnNumber
+                              : '—'}
+                          </span>
+                        </div>
+                        {files[0].extractedData.hsnNumber && files[0].extractedData.hsnNumber !== 'Unknown' ? (
+                          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
+                            <CheckCircle className="h-3 w-3 mr-1" />
+                            Found
+                          </Badge>
+                        ) : (
+                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
+                            <AlertCircle className="h-3 w-3 mr-1" />
+                            Missing
+                          </Badge>
+                        )}
+                      </div>
+
+
+                    </div>
+                  </Card>
+
+                  <Button
+                    className="w-full"
+                    onClick={() => showDetails(files[0])}
+                  >
+                    View Full Details
+                  </Button>
+                </div>
+              </div>
+            ) : files.length > 0 && files[0].status === "processing" ? (
+              <div className="flex flex-col items-center justify-center h-full space-y-4">
+                <Clock className="h-12 w-12 text-primary animate-spin" />
+                <div className="text-center">
+                  <h3 className="text-lg font-semibold">Processing Invoice...</h3>
+                  <p className="text-sm text-muted-foreground mt-2">{files[0].name}</p>
+                  <Progress value={files[0].progress} className="h-2 mt-4" />
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-center space-y-4">
+                <div className="p-6 rounded-full bg-muted">
+                  <FileText className="h-12 w-12 text-muted-foreground" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-semibold">No Invoice Uploaded</h3>
+                  <p className="text-sm text-muted-foreground mt-2">
+                    Upload an invoice to see the summary here
+                  </p>
+                </div>
+              </div>
+            )}
+          </Card>
+        </div>
+
+
+        {/* Past Uploads History */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Past Uploads</h3>
+          {isLoadingHistory ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <Clock className="h-8 w-8 mx-auto mb-2 animate-spin" />
+              Loading invoice history...
+            </div>
+          ) : files.length > 0 ? (
+            <div className="space-y-3">
+              {files.map((file, index) => (
+                <div key={index} className="flex items-center justify-between p-4 rounded-lg border hover:bg-accent/50 transition-colors">
+                  <div className="flex items-center gap-3 flex-1">
+                    <FileText className="h-5 w-5 text-primary" />
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium truncate">{file.name}</p>
+                      <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
+                        <span className="flex items-center gap-1">
+                          <Calendar className="h-3 w-3" />
+                          {file.uploadedAt ? new Date(file.uploadedAt).toLocaleDateString('en-IN', {
+                            day: '2-digit',
+                            month: 'short',
+                            year: 'numeric'
+                          }) : file.uploadTime}
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3 w-3" />
+                          {file.uploadedAt ? new Date(file.uploadedAt).toLocaleTimeString('en-IN', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          }) : '—'}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Badge
+                      variant={file.status === "completed" ? "default" : "secondary"}
+                      className={file.status === "completed" ? "bg-green-100 text-green-800" : ""}
+                    >
+                      {file.status === "completed" ? "Processed" : "Processing"}
+                    </Badge>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => showDetails(file)}
+                      disabled={file.status === "processing"}
+                    >
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              No invoices uploaded yet. Upload your first invoice above!
+            </div>
+          )}
+        </Card>
+
+        {/* Auto-sync Options */}
+        <Card className="p-6">
+          <h3 className="text-lg font-semibold mb-4">Auto-Sync Settings</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between p-4 rounded-lg border">
+              <div>
+                <p className="font-medium">Email Inbox Integration</p>
+                <p className="text-sm text-muted-foreground">
+                  Automatically import invoices from finance@adani.com
+                </p>
+              </div>
+              <Button variant="outline">Configure</Button>
+            </div>
+            <div className="flex items-center justify-between p-4 rounded-lg border">
+              <div>
+                <p className="font-medium">Shared Drive Sync</p>
+                <p className="text-sm text-muted-foreground">
+                  Monitor Google Drive folder for new invoices
+                </p>
+              </div>
+              <Button variant="outline">Connect</Button>
+            </div>
+          </div>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
+};
+
+export default Upload;

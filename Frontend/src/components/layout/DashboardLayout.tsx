@@ -39,7 +39,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   const allMenuItems = [
     { icon: BarChart3, label: "Dashboard", path: "/dashboard", permission: "canViewDashboard" as const },
     { icon: Upload, label: "Upload Invoices", path: "/upload", permission: "canUploadInvoices" as const },
-    { icon: FileSearch, label: "Invoice Explorer", path: "/explorer", permission: "canViewInvoices" as const },
+    // { icon: FileSearch, label: "Invoice Explorer", path: "/explorer", permission: "canViewInvoices" as const },
     { icon: ShieldAlert, label: "Anomaly Center", path: "/anomalies", permission: "canViewAnomalies" as const },
     { icon: Users, label: "Vendor Analytics", path: "/vendors", permission: "canViewVendors" as const },
     { icon: FileSpreadsheet, label: "Reports", path: "/reports", permission: "canViewReports" as const },
