@@ -1,0 +1,138 @@
+# FINTEL AI - Git Ignore File
+
+# Environment Variables (IMPORTANT - Contains API Keys)
+.env
+.env.local
+.env.production
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual Environment
+venv/
+ENV/
+env/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS Files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs
+*.log
+logs/
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
+# MongoDB
+data/
+
+# Uploads & User Data (IMPORTANT - Contains Invoice Files)
+AI-Agent/uploads/
+Backend/uploads/
+uploads/
+
+# ML Models (Too Large for Git)
+*.pkl
+*.h5
+*.model
+*.joblib
+fintel_models.pkl
+fintel_real_trained_models.pkl
+
+# Poppler Binaries (Too Large)
+AI-Agent/poppler/
+Backend/poppler/
+poppler/
+
+# Preprocessed Images
+preprocessed_*.png
+test_output.png
+
+# Temporary Files
+*.tmp
+*.temp
+temp/
+tmp/
+
+# Reports
+reports/
+*.pdf
+*.xlsx
+
+# Node.js (Frontend)
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# Frontend Build
+Frontend/dist/
+Frontend/build/
+Frontend/.vite/
+.next/
+out/
+
+# Testing
+.coverage
+htmlcov/
+.pytest_cache/
+.tox/
+
+# Jupyter Notebooks
+.ipynb_checkpoints/
+*.ipynb
+
+# Backup Files
+*.bak
+*.backup
+*_backup.*
+
+# Documentation Build
+docs/_build/
+site/
+
+# Package Files
+*.tar.gz
+*.zip
+*.rar
+
+# API Keys and Credentials (CRITICAL)
+credentials.json
+service-account.json
+*.pem
+*.key
+
+# Cache
+.cache/
+*.cache
