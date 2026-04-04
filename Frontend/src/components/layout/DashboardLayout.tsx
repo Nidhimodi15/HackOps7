@@ -177,6 +177,12 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         {/* Main Content */}
         <main className="flex-1 p-[24px] animate-fade-in transition-all duration-300">
           <div className="max-w-[1400px] mx-auto">
+            {/* Welcome Message */}
+            <div className="mb-6">
+              <h2 className="text-[15px] font-bold text-gray-500 dark:text-gray-400 flex items-center gap-2">
+                Welcome back, <span className="text-[var(--text-primary)] font-extrabold uppercase tracking-tight">{user?.name || 'Finance Admin'}</span> 👋
+              </h2>
+            </div>
             {children}
           </div>
         </main>

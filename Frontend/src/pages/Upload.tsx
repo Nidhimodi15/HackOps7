@@ -687,13 +687,6 @@ const Upload = () => {
                       )}
                     </DataRow>
                     
-                    <DataRow icon={<FileCheck size={16} />} label="HSN Validation">
-                       {(selectedFile.extractedData.hsnValidations?.length ?? 0) > 0 && selectedFile.extractedData.hsnValidations?.[0].is_correct ? (
-                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100">Correct</Badge>
-                      ) : (
-                        <Badge variant="secondary">Missing / Unverifiable</Badge>
-                      )}
-                    </DataRow>
                   </div>
                 </div>
 
