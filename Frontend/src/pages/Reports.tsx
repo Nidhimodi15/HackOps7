@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { API_BASE_URL, BACKEND_URL } from '../config/api';
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -387,7 +388,7 @@ const Reports = () => {
       };
 
       // Send email
-      const response = await fetch('http://localhost:5000/api/email/send-report', {
+      const response = await fetch(`${API_BASE_URL}/api/email/send-report`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

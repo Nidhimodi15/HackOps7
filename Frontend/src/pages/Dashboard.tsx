@@ -1,8 +1,8 @@
-import { useState, useEffect, useContext } from "react";
+import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard } from "@/components/ui/stat-card";
 import { API_BASE_URL } from "@/config/api";
-import { AuthContext } from "@/context/AuthContext";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   FileText,
   AlertTriangle,
