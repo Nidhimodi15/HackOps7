@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api';
 import { useState, useEffect, useRef } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
@@ -91,7 +92,7 @@ const Upload = () => {
 
   const loadInvoiceHistory = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/invoices/history?limit=20');
+      const response = await fetch(`${API_BASE_URL}/api/invoices/history?limit=20`);
       const data = await response.json();
 
       if (data.success && data.invoices) {
@@ -184,7 +185,7 @@ const Upload = () => {
         const formData = new FormData();
         formData.append('file', file);
 
-        const response = await fetch('http://localhost:8000/api/invoices/upload', {
+        const response = await fetch(`${API_BASE_URL}/api/invoices/upload`, {
           method: 'POST',
           body: formData,
         });

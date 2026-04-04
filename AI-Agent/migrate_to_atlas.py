@@ -13,7 +13,7 @@ cloud_db = cloud_client.get_database()
 print("🚀 Starting Cloud Migration (Local -> MongoDB Atlas)...")
 
 # Collections to migrate
-collections = ['invoices', 'vendors', 'anomalies']
+collections = ['invoices', 'vendors', 'anomalies', 'users']
 
 for coll_name in collections:
     # Fetch from local
@@ -31,4 +31,4 @@ for coll_name in collections:
         print(f"⚠️ No records found in local '{coll_name}'.")
 
 print("\n✨ MIGRATION COMPLETE! 🏁")
-print("Your invoices, vendors, and anomalies are now in MongoDB Atlas Cloud.")
+print("Your invoices, vendors, anomalies, and users are now in MongoDB Atlas Cloud.")

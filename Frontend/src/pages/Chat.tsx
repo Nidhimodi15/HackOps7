@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api';
 import { useState, useRef, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
@@ -49,7 +50,7 @@ const Chat = () => {
 
     try {
       // Call Gemini AI endpoint
-      const response = await fetch('http://localhost:8000/api/chat', {
+      const response = await fetch(`${API_BASE_URL}/api/chat`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

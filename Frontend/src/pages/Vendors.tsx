@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api';
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
@@ -36,7 +37,7 @@ const Vendors = () => {
 
   const loadVendors = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/vendors');
+      const response = await fetch(`${API_BASE_URL}/api/vendors`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }

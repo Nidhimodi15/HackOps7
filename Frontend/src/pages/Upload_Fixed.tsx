@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api';
 import { useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
@@ -74,7 +75,7 @@ const Upload = () => {
         formData.append("file", file);
 
         const response = await fetch(
-          "http://localhost:8000/api/invoices/upload",
+          `${API_BASE_URL}/api/invoices/upload`,
           {
             method: "POST",
             body: formData,

@@ -47,7 +47,7 @@ const Reports = () => {
 
   const loadStats = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/dashboard/stats');
+      const response = await fetch(`${API_BASE_URL}/api/dashboard/stats`);
       if (!response.ok) throw new Error('Failed to load stats');
       const data = await response.json();
       if (data.success && data.stats) {
@@ -64,9 +64,9 @@ const Reports = () => {
     try {
       // Fetch real data from APIs
       const [invoicesRes, anomaliesRes, vendorsRes] = await Promise.all([
-        fetch('http://localhost:8000/api/invoices/history'),
-        fetch('http://localhost:8000/api/anomalies'),
-        fetch('http://localhost:8000/api/vendors')
+        fetch(`${API_BASE_URL}/api/invoices/history`),
+        fetch(`${API_BASE_URL}/api/anomalies`),
+        fetch(`${API_BASE_URL}/api/vendors`)
       ]);
 
       const invoicesData = await invoicesRes.json();
@@ -127,7 +127,7 @@ const Reports = () => {
   const exportToExcel = async () => {
     try {
       // Fetch invoice history
-      const response = await fetch('http://localhost:8000/api/invoices/history?limit=100');
+      const response = await fetch(`${API_BASE_URL}/api/invoices/history?limit=100`);
       const data = await response.json();
       
       if (!data.success || !data.invoices) {
@@ -168,7 +168,7 @@ const Reports = () => {
       
       if (reportType === 'anomaly') {
         // Anomaly Detection Report
-        const response = await fetch('http://localhost:8000/api/anomalies');
+        const response = await fetch(`${API_BASE_URL}/api/anomalies`);
         data = await response.json();
         
         if (!data.success || !data.anomalies) {
@@ -204,7 +204,7 @@ const Reports = () => {
         
       } else if (reportType === 'vendor') {
         // Vendor Audit Trail
-        const response = await fetch('http://localhost:8000/api/invoices/history?limit=100');
+        const response = await fetch(`${API_BASE_URL}/api/invoices/history?limit=100`);
         data = await response.json();
         
         if (!data.success || !data.invoices) {
@@ -252,7 +252,7 @@ const Reports = () => {
         
       } else if (reportType === 'monthly') {
         // Monthly Compliance Summary
-        const response = await fetch('http://localhost:8000/api/invoices/history?limit=100');
+        const response = await fetch(`${API_BASE_URL}/api/invoices/history?limit=100`);
         data = await response.json();
         
         if (!data.success || !data.invoices) {
@@ -296,7 +296,7 @@ const Reports = () => {
         
       } else {
         // Default: All Invoices Report
-        const response = await fetch('http://localhost:8000/api/invoices/history?limit=100');
+        const response = await fetch(`${API_BASE_URL}/api/invoices/history?limit=100`);
         data = await response.json();
         
         if (!data.success || !data.invoices) {
@@ -356,7 +356,7 @@ const Reports = () => {
       const loadingToast = toast.loading('Sending report via email...');
 
       // Fetch anomaly counts
-      const anomaliesRes = await fetch('http://localhost:8000/api/anomalies');
+      const anomaliesRes = await fetch(`${API_BASE_URL}/api/anomalies`);
       const anomaliesData = await anomaliesRes.json();
 
       const anomalyCounts = {

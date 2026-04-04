@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api';
 import { useState, useEffect } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
@@ -36,7 +37,7 @@ const Anomalies = () => {
 
   const dismissAnomaly = async (id: string) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/anomalies/${id}`, { method: 'DELETE' });
+      const response = await fetch(`${API_BASE_URL}/api/anomalies/${id}`, { method: 'DELETE' });
       const data = await response.json();
       if (data.success) {
         setAnomalies(prev => prev.filter(a => a.id !== id));
@@ -48,7 +49,7 @@ const Anomalies = () => {
 
   const fetchAnomalies = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/anomalies');
+      const response = await fetch(`${API_BASE_URL}/api/anomalies`);
       const data = await response.json();
       
       if (data.success && data.anomalies) {

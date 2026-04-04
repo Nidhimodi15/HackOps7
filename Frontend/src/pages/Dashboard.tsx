@@ -162,7 +162,7 @@ const Dashboard = () => {
 
   const loadRecentActivities = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/invoices/history?limit=10');
+      const response = await fetch(`${API_BASE_URL}/api/invoices/history?limit=10`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.success && data.invoices) {

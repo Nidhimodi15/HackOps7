@@ -1,3 +1,4 @@
+import { API_BASE_URL, BACKEND_URL } from '../config/api';
 import { useState, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
@@ -64,7 +65,7 @@ const Explorer = () => {
 
   const fetchInvoices = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/invoices/history');
+      const response = await fetch(`${API_BASE_URL}/api/invoices/history`);
       const data = await response.json();
 
       if (data.success && data.invoices) {
