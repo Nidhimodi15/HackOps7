@@ -1,0 +1,12 @@
+{
+  "_id": "69cfb5dca177ba8a6253ef0c",
+  "invoiceId": "69cfb5dca177ba8a6253ef0a",
+  "invoiceNumber": "KPAC-24-25-1105",
+  "anomalyType": "INVALID_HSN_SAC",
+  "severity": "HIGH",
+  "description": "Invalid HSN/SAC code: 997163 - API error: Status 401",
+  "detectedDate": "2026-04-03T18:13:08.965000",
+  "relatedInvoiceId": null,
+  "vendor_name": "KP Actuaries and Consultants LLP",
+  "invoice_number": "KPAC-24-25-1105"
+}

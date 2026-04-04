@@ -1,0 +1,27 @@
+=== POST https://api.sandbox.co.in/gst/compliance/public/gstin/search ===
+Status: 403
+Response: {
+    "code": 403,
+    "message": "Insufficient privilege",
+    "timestamp": 1775206538229,
+    "transaction_id": "5cf6becc-5e64-40bb-b674-c00061d830c0"
+}
+
+=== GET https://api.sandbox.co.in/gst/compliance/public/gstin/05ABNTY3290P8ZB ===
+Status: 403
+Response: {
+    "code": 403,
+    "message": "Insufficient privilege",
+    "timestamp": 1775206538529,
+    "transaction_id": "cc6f1ce1-6658-4952-9070-da4c8784a38b"
+}
+
+=== POST https://api.sandbox.co.in/gst/search ===
+Status: 403
+Response: {
+    "code": 403,
+    "message": "Insufficient privilege",
+    "timestamp": 1775206538953,
+    "transaction_id": "e0a29529-4647-442e-bf58-efb7ed2ddc8e"
+}
+
