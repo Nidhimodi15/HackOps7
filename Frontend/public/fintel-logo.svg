@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 700">
+  <!-- AI Head with Circuit -->
+  <path d="M 120 340 Q 120 240 180 200 Q 240 160 300 200 Q 360 240 360 340 Q 360 380 340 420 L 320 420 Q 340 380 340 340 Q 340 260 300 220 Q 260 180 200 220 Q 140 260 140 340 Q 140 380 160 420 L 140 420 Q 120 380 120 340 Z" fill="none" stroke="#1e3a5f" stroke-width="8"/>
+  
+  <!-- Circuit Lines in Head -->
+  <line x1="160" y1="280" x2="200" y2="280" stroke="#3b82f6" stroke-width="6"/>
+  <circle cx="210" cy="280" r="8" fill="#3b82f6"/>
+  <line x1="210" y1="280" x2="250" y2="250" stroke="#3b82f6" stroke-width="6"/>
+  <circle cx="250" cy="250" r="8" fill="#3b82f6"/>
+  
+  <line x1="160" y1="320" x2="220" y2="320" stroke="#3b82f6" stroke-width="6"/>
+  <circle cx="230" cy="320" r="8" fill="#3b82f6"/>
+  
+  <line x1="160" y1="360" x2="200" y2="360" stroke="#3b82f6" stroke-width="6"/>
+  <circle cx="210" cy="360" r="8" fill="#3b82f6"/>
+  <line x1="210" y1="360" x2="250" y2="390" stroke="#3b82f6" stroke-width="6"/>
+  <circle cx="250" cy="390" r="8" fill="#3b82f6"/>
+  
+  <!-- Dollar Sign Circle -->
+  <circle cx="310" cy="420" r="60" fill="#3b82f6" stroke="#1e3a5f" stroke-width="6"/>
+  <text x="310" y="450" font-family="Arial, sans-serif" font-size="70" font-weight="bold" fill="#1e3a5f" text-anchor="middle">$</text>
+  
+  <!-- FINTEL Text -->
+  <text x="400" y="380" font-family="Arial, sans-serif" font-size="140" font-weight="bold" fill="#1e3a5f">FINTEL</text>
+  
+  <!-- AI Text -->
+  <text x="400" y="520" font-family="Arial, sans-serif" font-size="140" font-weight="bold" fill="#3b82f6">AI</text>
+</svg>
