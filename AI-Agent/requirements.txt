@@ -9,3 +9,5 @@ PyMuPDF
 Pillow
 python-multipart
 python-dotenv
+scikit-learn
+mistralai
