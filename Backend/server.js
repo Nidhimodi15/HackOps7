@@ -25,7 +25,8 @@ app.use(express.urlencoded({ extended: true }));
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 // MongoDB Connection
-mongoose.connect('mongodb://localhost:27017/fintel-ai', {
+const MONGODB_URI = process.env.MONGODB_URI || 'mongodb://localhost:27017/fintel-ai';
+mongoose.connect(MONGODB_URI, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 })

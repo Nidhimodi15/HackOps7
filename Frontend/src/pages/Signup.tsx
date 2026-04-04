@@ -53,7 +53,7 @@ const Signup = () => {
 
     try {
       // Call backend API for registration
-      const response = await fetch(`${BACKEND_URL}/auth/signup`, {
+      const response = await fetch(`${BACKEND_URL}/api/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
