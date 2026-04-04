@@ -1,0 +1,15 @@
+fastapi
+uvicorn
+pymongo[srv]
+google-generativeai
+pydantic
+pandas
+numpy
+PyMuPDF
+Pillow
+python-multipart
+python-dotenv
+easyocr
+torch
+torchvision
+torchaudio
