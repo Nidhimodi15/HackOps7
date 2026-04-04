@@ -9,7 +9,3 @@ PyMuPDF
 Pillow
 python-multipart
 python-dotenv
-easyocr
-torch
-torchvision
-torchaudio
