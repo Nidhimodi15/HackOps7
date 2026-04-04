@@ -10,10 +10,13 @@ import json
 from bson import ObjectId
 
 class FintelDatabase:
-    def __init__(self, connection_string="mongodb://localhost:27017/"):
+    def __init__(self, connection_string=None):
         """Initialize MongoDB connection"""
-        self.client = MongoClient(connection_string)
-        self.db = self.client['fintel_ai']
+        import os
+        # Prioritize Environment Variable (Cloud), then passed string, then localhost
+        self.conn_str = os.environ.get('MONGODB_URI') or connection_string or "mongodb://localhost:27017/"
+        self.client = MongoClient(self.conn_str)
+        self.db = self.client.get_database() if "mongodb.net" in self.conn_str and ".net/" not in self.conn_str else self.client['fintel_ai']
         
         # Collections
         self.invoices = self.db['invoices']
