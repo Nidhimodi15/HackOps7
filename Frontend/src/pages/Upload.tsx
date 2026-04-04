@@ -3,9 +3,11 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Upload as UploadIcon, FileText, CheckCircle, AlertCircle, Clock, Calendar } from "lucide-react";
+import { Upload as UploadIcon, FileText, CheckCircle, AlertCircle, Clock, Calendar, Receipt, Building2, IndianRupee, FileCheck, ShieldAlert, BadgeInfo, Percent, ShieldCheck, Flame } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+import { Separator } from "@/components/ui/separator";
 
 interface UploadedFile {
   id: string;
@@ -80,6 +82,7 @@ const Upload = () => {
   const [files, setFiles] = useState<UploadedFile[]>([]);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoadingHistory, setIsLoadingHistory] = useState(true);
+  const [selectedFile, setSelectedFile] = useState<UploadedFile | null>(null);
 
   // Load past invoices from MongoDB on component mount
   useEffect(() => {
@@ -291,66 +294,11 @@ const Upload = () => {
 
   const showDetails = (file: UploadedFile) => {
     if (file.extractedData) {
-      const data = file.extractedData;
-
-      // Create detailed compliance report
-      const complianceDetails = `
-🤖 FINTEL AI - COMPLETE COMPLIANCE REPORT
-==========================================
-
-📋 BASIC EXTRACTION:
-• Invoice Number: ${data.invoiceNumber}
-• Vendor: ${data.vendorName}
-• Amount: ₹${data.invoiceAmount?.toLocaleString() || 'Not found'}
-• Date: ${data.invoiceDate}
-• GST Numbers: ${data.gstNumbers?.join(', ') || 'None'}
-
-📊 COMPLIANCE SCORING:
-• Overall Score: ${data.complianceScore?.toFixed(1) || 0}%
-• Status: ${data.complianceStatus || 'Unknown'}
-• Checks Passed: ${data.checksPassedCount || 0}/${data.totalChecksCount || 12}
-• Risk Level: ${data.riskLevel || 'Unknown'}
-
-🔍 ENHANCED EXTRACTION:
-• HSN/SAC Codes: ${data.hsnSacCodes?.join(', ') || 'None'}
-• Items: ${data.itemDescriptions?.join(', ') || 'None'}
-• OCR Confidence: ${data.ocrConfidence?.toFixed(1) || 0}%
-
-🚨 ANOMALIES DETECTED:
-${data.anomaliesDetected?.length > 0 ?
-          data.anomaliesDetected.map(a => `• ${a}`).join('\n') :
-          '• No anomalies detected'}
-
-✅ VALIDATION RESULTS:
-• GST Validation: ${data.gstValidations?.length > 0 ?
-          data.gstValidations.map(g => g.valid ? '✅ Valid' : '❌ Invalid').join(', ') :
-          'Not checked'}
-• HSN Validation: ${data.hsnValidations?.length > 0 ?
-          data.hsnValidations.map(h => h.is_correct ? '✅ Correct' : '❌ Incorrect').join(', ') :
-          'Not checked'}
-• Arithmetic Check: ${data.arithmeticCheck?.overall_accurate ? '✅ Accurate' : '❌ Error detected'}
-• Duplicate Check: ${data.duplicateCheck?.length > 0 ? '🚨 Duplicate found' : '✅ No duplicates'}
-
-💰 PRICE ANALYSIS:
-${data.priceAnalysis?.length > 0 ?
-          data.priceAnalysis.map(p =>
-            `• ${p.item}: ₹${p.billed_price} (${p.variance_percent > 0 ? '+' : ''}${p.variance_percent?.toFixed(1)}% vs market)`
-          ).join('\n') :
-          '• No price analysis available'}
-
-🎯 RISK ASSESSMENT:
-• Risk Score: ${data.riskScore || 0}/100
-• ML Prediction: ${data.mlPrediction?.is_anomaly ? '🚨 Anomaly detected' : '✅ Normal pattern'}
-• Confidence: ${data.mlPrediction?.confidence?.toFixed(1) || 0}%
-
-Processed by: FINTEL AI v2.0 Complete Compliance System
-      `;
-
-      alert(complianceDetails);
+      setSelectedFile(file);
     } else if (file.error) {
-      alert(`❌ Processing Error: ${file.error}`);
+      toast.error(`Processing Error: ${file.error}`);
     } else {
-      alert("⏳ Still processing... Please wait.");
+      toast.info("⏳ Still processing... Please wait.");
     }
   };
 
@@ -745,8 +693,129 @@ Processed by: FINTEL AI v2.0 Complete Compliance System
           </div>
         </Card>
       </div>
+
+      {/* Modern Invoice Details Modal */}
+      <Dialog open={!!selectedFile} onOpenChange={(open) => !open && setSelectedFile(null)}>
+        <DialogContent className="max-w-2xl bg-[#F5F5F7] dark:bg-[#161616] p-0 overflow-hidden border-[#E5E5E5] dark:border-white/10 shadow-2xl rounded-xl gap-0">
+          {selectedFile?.extractedData && (
+            <div className="flex flex-col max-h-[85vh]">
+              {/* Header */}
+              <div className="flex items-center justify-between p-5 bg-[#F5F5F7] dark:bg-[#161616]">
+                <div className="flex items-center gap-4 min-w-0">
+                  <div className="flex items-center justify-center shrink-0 w-12 h-12 rounded-xl bg-primary text-primary-foreground shadow-inner">
+                    <Receipt size={28} />
+                  </div>
+                  <div className="min-w-0">
+                    <DialogTitle className="text-lg font-bold text-[#1A1A1A] dark:text-[#ededed] truncate pb-1">
+                      {selectedFile.extractedData.vendorName}
+                    </DialogTitle>
+                    <p className="text-sm font-medium text-muted-foreground truncate">
+                      Invoice #{selectedFile.extractedData.invoiceNumber}
+                    </p>
+                  </div>
+                </div>
+
+              </div>
+
+              {/* Scrollable Expanded Content */}
+              <div className="flex-1 overflow-y-auto bg-white dark:bg-[#1c1c1c] border-t border-[#E9E8EF] dark:border-white/5 rounded-t-3xl shadow-[0_-10px_40px_-15px_rgba(0,0,0,0.1)] p-6 space-y-6">
+                
+                {/* Core Details Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <DataRow icon={<IndianRupee size={16} />} label="Total Amount">
+                    <span className="text-[15px] font-bold text-[#107F3E] dark:text-green-400 bg-[#EBF9EC] dark:bg-green-500/10 border border-[#D1F0DB] dark:border-green-500/20 px-3 py-1 rounded-full">
+                      ₹{selectedFile.extractedData.invoiceAmount?.toLocaleString() || '0'}
+                    </span>
+                  </DataRow>
+                  
+                  <DataRow icon={<Calendar size={16} />} label="Invoice Date">
+                    <span className="text-[14px] font-semibold text-[#464646] dark:text-[#d4d4d4]">
+                      {selectedFile.extractedData.invoiceDate}
+                    </span>
+                  </DataRow>
+
+                  <DataRow icon={<Building2 size={16} />} label="GST Number">
+                    <span className="flex items-center gap-1.5 px-3 py-1 bg-muted rounded-full border border-border text-[13px] font-medium text-foreground">
+                      {selectedFile.extractedData.gstNumbers?.[0] || 'Unknown'}
+                    </span>
+                  </DataRow>
+
+                  <DataRow icon={<Percent size={16} />} label="GST Rate">
+                    <span className="text-[14px] font-semibold text-[#464646] dark:text-[#d4d4d4]">
+                      {selectedFile.extractedData.gstRate || 'Not found'}
+                    </span>
+                  </DataRow>
+                </div>
+
+                <Separator className="dark:bg-white/10" />
+
+                {/* Validation & Risk Details */}
+                <div className="space-y-4">
+                  <h4 className="text-sm font-bold text-muted-foreground uppercase tracking-wider">Verification Metrics</h4>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <DataRow icon={<ShieldCheck size={16} />} label="GST Verified">
+                      {selectedFile.extractedData.gstNumbers && selectedFile.extractedData.gstNumbers.length > 0 ? (
+                        selectedFile.extractedData.gstVerification && selectedFile.extractedData.gstVerification[0]?.is_active ? (
+                          <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100"><CheckCircle size={12} className="mr-1"/> Verified</Badge>
+                        ) : selectedFile.extractedData.gstVerification && selectedFile.extractedData.gstVerification[0]?.is_valid === false ? (
+                          <Badge variant="destructive" className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-100"><AlertCircle size={12} className="mr-1"/> Invalid</Badge>
+                        ) : selectedFile.extractedData.gstVerification && selectedFile.extractedData.gstVerification[0]?.success === false ? (
+                          <Badge variant="secondary" className="text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400"><AlertCircle size={12} className="mr-1"/> Not Found</Badge>
+                        ) : (
+                          <Badge variant="secondary" className="text-orange-600 bg-orange-100 dark:bg-orange-900/30 dark:text-orange-400"><AlertCircle size={12} className="mr-1"/> Not Found</Badge>
+                        )
+                      ) : (
+                        <Badge variant="secondary" className="text-yellow-600 bg-yellow-100 dark:bg-yellow-900/30 dark:text-yellow-400"><AlertCircle size={12} className="mr-1"/> Missing</Badge>
+                      )}
+                    </DataRow>
+                    
+                    <DataRow icon={<FileCheck size={16} />} label="HSN Validation">
+                       {(selectedFile.extractedData.hsnValidations?.length ?? 0) > 0 && selectedFile.extractedData.hsnValidations?.[0].is_correct ? (
+                        <Badge className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400 hover:bg-green-100">Correct</Badge>
+                      ) : (
+                        <Badge variant="secondary">Missing / Unverifiable</Badge>
+                      )}
+                    </DataRow>
+                  </div>
+                </div>
+
+                {/* Anomalies section if exist */}
+                {(selectedFile.extractedData.anomaliesDetected && selectedFile.extractedData.anomaliesDetected.length > 0) && (
+                  <>
+                    <Separator className="dark:bg-white/10" />
+                    <div>
+                      <h4 className="text-sm font-bold text-red-500 uppercase tracking-wider mb-3">Detected Anomalies</h4>
+                      <div className="flex flex-col gap-2">
+                        {selectedFile.extractedData.anomaliesDetected.map((anomaly, idx) => (
+                           <div key={idx} className="flex items-start gap-2 bg-red-50 dark:bg-red-950/20 text-red-700 dark:text-red-400 p-3 rounded-lg border border-red-100 dark:border-red-900/30 text-sm">
+                             <AlertCircle size={16} className="shrink-0 mt-0.5" />
+                             <span className="font-medium">{anomaly}</span>
+                           </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </div>
+          )}
+        </DialogContent>
+      </Dialog>
     </DashboardLayout>
   );
 };
+
+const DataRow = ({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) => (
+  <div className="flex items-center justify-between gap-4 py-1.5">
+    <div className="flex shrink-0 items-center gap-3 text-[#A1A1A1]">
+      {icon}
+      <span className="text-[13px] font-medium whitespace-nowrap text-[#71717A] dark:text-gray-400">
+        {label}
+      </span>
+    </div>
+    <div className="flex min-w-0 flex-1 justify-end">{children}</div>
+  </div>
+);
 
 export default Upload;
