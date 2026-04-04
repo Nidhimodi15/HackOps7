@@ -1,6 +1,8 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { StatCard } from "@/components/ui/stat-card";
+import { API_BASE_URL } from "@/config/api";
+import { AuthContext } from "@/context/AuthContext";
 import {
   FileText,
   AlertTriangle,
@@ -79,7 +81,7 @@ const Dashboard = () => {
   // Load anomaly trends from backend
   const loadAnomalyTrends = async (days: number = trendDays) => {
     try {
-      const response = await fetch(`http://localhost:8000/api/dashboard/anomaly-trends?days=${days}`);
+      const response = await fetch(`${API_BASE_URL}/api/dashboard/anomaly-trends?days=${days}`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
 
@@ -121,7 +123,7 @@ const Dashboard = () => {
 
   const loadDashboardStats = async (retryCount = 0) => {
     try {
-      const response = await fetch('http://localhost:8000/api/dashboard/stats');
+      const response = await fetch(`${API_BASE_URL}/api/dashboard/stats`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.success && data.stats) {
@@ -143,7 +145,7 @@ const Dashboard = () => {
 
   const loadAnomalyCounts = async () => {
     try {
-      const response = await fetch('http://localhost:8000/api/anomalies');
+      const response = await fetch(`${API_BASE_URL}/api/anomalies`);
       if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const data = await response.json();
       if (data.success && data.anomalies) {
