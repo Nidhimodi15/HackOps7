@@ -14,6 +14,7 @@ import {
 import { Zap, ShieldCheck, TrendingUp, Shield, User, ArrowLeft } from "lucide-react";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
+import { BACKEND_URL } from '../config/api';
 import { toast } from "sonner";
 import heroBg from "@/assets/hero-bg.jpg";
 
@@ -52,7 +53,7 @@ const Signup = () => {
 
     try {
       // Call backend API for registration
-      const response = await fetch('http://localhost:5000/api/auth/signup', {
+      const response = await fetch(`${BACKEND_URL}/auth/signup`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

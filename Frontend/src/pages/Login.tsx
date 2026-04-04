@@ -12,6 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Zap, ShieldCheck, TrendingUp, Shield, User } from "lucide-react";
+import { BACKEND_URL } from '../config/api';
 import { useAuth, UserRole } from "@/contexts/AuthContext";
 import { ThemeToggle } from "@/components/theme/ThemeToggle";
 import { useTheme } from "@/contexts/ThemeContext";
@@ -41,7 +42,7 @@ const Login = () => {
 
     try {
       // Call backend API for authentication
-      const response = await fetch('http://localhost:5000/api/auth/login', {
+      const response = await fetch(`${BACKEND_URL}/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
