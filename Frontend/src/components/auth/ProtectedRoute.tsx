@@ -10,7 +10,12 @@ interface ProtectedRouteProps {
 }
 
 export function ProtectedRoute({ children, requiredPermission }: ProtectedRouteProps) {
-  const { user, hasPermission } = useAuth();
+  const { user, hasPermission, isLoading } = useAuth();
+
+  // Wait for auth to initialize before making routing decisions
+  if (isLoading) {
+    return null;
+  }
 
   // If no user, redirect to login
   if (!user) {

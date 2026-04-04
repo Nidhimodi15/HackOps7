@@ -32,7 +32,7 @@ export function StatCard({
   return (
     <Card
       className={cn(
-        "border-l-4 p-6 transition-all hover:shadow-lg",
+        "border-l-4 border-[var(--border)] p-6 transition-all hover:shadow-lg",
         variantStyles[variant],
         className
       )}

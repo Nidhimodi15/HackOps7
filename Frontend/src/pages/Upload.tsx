@@ -3,7 +3,7 @@ import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Upload as UploadIcon, FileText, CheckCircle, AlertCircle, Clock, Calendar, Receipt, Building2, IndianRupee, FileCheck, ShieldAlert, BadgeInfo, Percent, ShieldCheck, Flame } from "lucide-react";
+import { Upload as UploadIcon, FileText, CheckCircle, AlertCircle, Clock, Calendar, Receipt, Building2, IndianRupee, FileCheck, ShieldAlert, BadgeInfo, Percent, ShieldCheck, Flame, TrendingUp } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
@@ -284,11 +284,11 @@ const Upload = () => {
   const getStatusIcon = (status: UploadedFile["status"]) => {
     switch (status) {
       case "completed":
-        return <CheckCircle className="h-5 w-5 text-green-500" />;
+        return <CheckCircle className="h-5 w-5 text-[var(--color-success)]" />;
       case "error":
-        return <AlertCircle className="h-5 w-5 text-red-500" />;
+        return <AlertCircle className="h-5 w-5 text-[var(--color-danger)]" />;
       case "processing":
-        return <Clock className="h-5 w-5 text-blue-500" />;
+        return <Clock className="h-5 w-5 text-[var(--anomaly-hsn)]" />;
     }
   };
 
@@ -326,7 +326,7 @@ const Upload = () => {
         {/* Upload Zone with Latest Result */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Left: Upload Box */}
-          <Card className="p-12 border-2 border-dashed hover:border-primary transition-colors">
+          <Card className="p-12 border-2 border-dashed border-[var(--border)] hover:border-primary transition-colors bg-white/50 dark:bg-white/5 rounded-[24px]">
             <div
               className="flex flex-col items-center justify-center space-y-4"
               onDrop={handleDrop}
@@ -361,7 +361,7 @@ const Upload = () => {
           </Card>
 
           {/* Right: Latest Invoice Summary */}
-          <Card className="p-6">
+          <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5">
             {files.length > 0 && files[0].status === "completed" && files[0].extractedData ? (
               <div>
                 <div className="flex items-center justify-between mb-4">
@@ -377,7 +377,7 @@ const Upload = () => {
                     <span className="font-medium">{files[0].name}</span>
                   </div>
 
-                  <Card className="p-4 border-l-4 border-l-primary">
+                  <Card className="p-4 border border-[var(--border)] border-l-4 border-l-primary rounded-[16px] bg-white dark:bg-white/5">
                     <h4 className="font-semibold text-base mb-3">Invoice Summary</h4>
                     <div className="space-y-2.5">
                       {/* Vendor */}
@@ -476,20 +476,10 @@ const Upload = () => {
                               <CheckCircle className="h-3 w-3 mr-1" />
                               Verified
                             </Badge>
-                          ) : files[0].extractedData.gstVerification && files[0].extractedData.gstVerification[0]?.is_valid === false ? (
-                            <Badge variant="destructive" className="bg-red-100 text-red-800 text-xs">
-                              <AlertCircle className="h-3 w-3 mr-1" />
-                              Invalid
-                            </Badge>
-                          ) : files[0].extractedData.gstVerification && files[0].extractedData.gstVerification[0]?.success === false ? (
-                            <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
-                              <AlertCircle className="h-3 w-3 mr-1" />
-                              Not Found
-                            </Badge>
                           ) : (
                             <Badge variant="secondary" className="bg-orange-100 text-orange-800 text-xs">
                               <AlertCircle className="h-3 w-3 mr-1" />
-                              Not Found
+                              Unverified
                             </Badge>
                           )
                         ) : (
@@ -500,75 +490,26 @@ const Upload = () => {
                         )}
                       </div>
 
-                      {/* Vendor Name Match (GST vs Invoice) */}
+                      {/* Vendor Name Match */}
                       {files[0].extractedData.gstVerification && files[0].extractedData.gstVerification[0]?.success && (
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-2">
                             <span className="text-sm text-muted-foreground min-w-[80px]">Owner</span>
-                            <span className="font-semibold text-sm truncate max-w-[180px]">
-                              {files[0].extractedData.gstVerification[0]?.legal_name || '—'}
+                            <span className="font-semibold text-xs text-primary truncate max-w-[120px]">
+                              {files[0].extractedData.gstVerification[0]?.legal_name}
                             </span>
                           </div>
                           {files[0].extractedData.gstVerification[0]?.vendor_name_match?.match ? (
                             <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
-                              <CheckCircle className="h-3 w-3 mr-1" />
-                              Matched
+                              <CheckCircle className="h-3 w-3 mr-1" /> Matched
                             </Badge>
                           ) : (
                             <Badge variant="destructive" className="bg-red-100 text-red-800 text-xs">
-                              <AlertCircle className="h-3 w-3 mr-1" />
-                              Name Mismatch
+                              <AlertCircle className="h-3 w-3 mr-1" /> Mismatch
                             </Badge>
                           )}
                         </div>
                       )}
-
-                      {/* GST Rate */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground min-w-[80px]">GST Rate</span>
-                          <span className="font-semibold text-sm">
-                            {files[0].extractedData.gstRate && files[0].extractedData.gstRate !== 'Unknown'
-                              ? files[0].extractedData.gstRate
-                              : '—'}
-                          </span>
-                        </div>
-                        {files[0].extractedData.gstRate && files[0].extractedData.gstRate !== 'Unknown' ? (
-                          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Found
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
-                            <AlertCircle className="h-3 w-3 mr-1" />
-                            Missing
-                          </Badge>
-                        )}
-                      </div>
-
-                      {/* HSN Number */}
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm text-muted-foreground min-w-[80px]">HSN</span>
-                          <span className="font-semibold text-sm">
-                            {files[0].extractedData.hsnNumber && files[0].extractedData.hsnNumber !== 'Unknown'
-                              ? files[0].extractedData.hsnNumber
-                              : '—'}
-                          </span>
-                        </div>
-                        {files[0].extractedData.hsnNumber && files[0].extractedData.hsnNumber !== 'Unknown' ? (
-                          <Badge variant="default" className="bg-green-100 text-green-800 text-xs">
-                            <CheckCircle className="h-3 w-3 mr-1" />
-                            Found
-                          </Badge>
-                        ) : (
-                          <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-xs">
-                            <AlertCircle className="h-3 w-3 mr-1" />
-                            Missing
-                          </Badge>
-                        )}
-                      </div>
-
 
                     </div>
                   </Card>
@@ -608,7 +549,7 @@ const Upload = () => {
 
 
         {/* Past Uploads History */}
-        <Card className="p-6">
+        <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5">
           <h3 className="text-lg font-semibold mb-4">Past Uploads</h3>
           {isLoadingHistory ? (
             <div className="text-center py-8 text-muted-foreground">
@@ -618,7 +559,7 @@ const Upload = () => {
           ) : files.length > 0 ? (
             <div className="space-y-3">
               {files.map((file, index) => (
-                <div key={index} className="flex items-center justify-between p-4 rounded-lg border hover:bg-accent/50 transition-colors">
+                <div key={index} className="flex items-center justify-between p-4 rounded-[16px] border border-[var(--border)] bg-white dark:bg-white/5 hover:bg-accent/50 transition-colors">
                   <div className="flex items-center gap-3 flex-1">
                     <FileText className="h-5 w-5 text-primary" />
                     <div className="flex-1 min-w-0">
@@ -668,30 +609,6 @@ const Upload = () => {
           )}
         </Card>
 
-        {/* Auto-sync Options */}
-        <Card className="p-6">
-          <h3 className="text-lg font-semibold mb-4">Auto-Sync Settings</h3>
-          <div className="space-y-3">
-            <div className="flex items-center justify-between p-4 rounded-lg border">
-              <div>
-                <p className="font-medium">Email Inbox Integration</p>
-                <p className="text-sm text-muted-foreground">
-                  Automatically import invoices from finance@adani.com
-                </p>
-              </div>
-              <Button variant="outline">Configure</Button>
-            </div>
-            <div className="flex items-center justify-between p-4 rounded-lg border">
-              <div>
-                <p className="font-medium">Shared Drive Sync</p>
-                <p className="text-sm text-muted-foreground">
-                  Monitor Google Drive folder for new invoices
-                </p>
-              </div>
-              <Button variant="outline">Connect</Button>
-            </div>
-          </div>
-        </Card>
       </div>
 
       {/* Modern Invoice Details Modal */}

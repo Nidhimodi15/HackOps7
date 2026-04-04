@@ -108,7 +108,7 @@ const Chat = () => {
           </p>
         </div>
 
-        <Card className="flex-1 flex flex-col overflow-hidden">
+        <Card className="flex-1 flex flex-col overflow-hidden border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
           {/* Messages */}
           <ScrollArea className="flex-1 p-6" ref={scrollRef}>
             <div className="space-y-6">

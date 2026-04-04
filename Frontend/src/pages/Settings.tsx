@@ -16,9 +16,9 @@ const Settings = () => {
 
   return (
     <DashboardLayout>
-      <div className="space-y-6 max-w-5xl">
+      <div className="space-y-6 max-w-[1200px] mx-auto mt-6 px-4 pb-8">
         <div>
-          <h1 className="text-3xl font-bold mb-2">Settings</h1>
+          <h1 className="text-2xl font-bold mb-2 tracking-tight text-[var(--text-primary)]">Settings</h1>
           <p className="text-muted-foreground">
             Configure FINTEL AI system preferences and integrations
           </p>
@@ -33,7 +33,7 @@ const Settings = () => {
           </TabsList>
 
           <TabsContent value="company" className="space-y-6">
-            <Card className="p-6">
+            <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <Building2 className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-semibold">Company Information</h3>
@@ -178,7 +178,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="api" className="space-y-6">
-            <Card className="p-6">
+            <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <Key className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-semibold">API Configuration</h3>
@@ -247,7 +247,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="hsn" className="space-y-6">
-            <Card className="p-6">
+            <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <Database className="h-5 w-5 text-primary" />
                 <h3 className="text-lg font-semibold">HSN Code Management</h3>
@@ -304,7 +304,7 @@ const Settings = () => {
           </TabsContent>
 
           <TabsContent value="notifications" className="space-y-6">
-            <Card className="p-6">
+            <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
               <h3 className="text-lg font-semibold mb-4">Notification Preferences</h3>
               <p className="text-sm text-muted-foreground mb-6">
                 Configure when and how you receive alerts about anomalies and compliance issues

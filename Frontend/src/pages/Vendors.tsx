@@ -67,22 +67,22 @@ const Vendors = () => {
 
         {/* Summary Cards */}
         <div className="grid gap-6 md:grid-cols-3">
-          <Card className="p-6">
+          <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
             <p className="text-sm text-muted-foreground mb-2">Total Vendors</p>
             <p className="text-3xl font-bold">{isLoading ? "..." : vendors.length}</p>
           </Card>
-          <Card className="p-6">
+          <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
             <p className="text-sm text-muted-foreground mb-2">Total Spend</p>
             <p className="text-3xl font-bold">{isLoading ? "..." : `₹${(totalSpend / 100000).toFixed(2)}L`}</p>
           </Card>
-          <Card className="p-6">
+          <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
             <p className="text-sm text-muted-foreground mb-2">Total Invoices</p>
             <p className="text-3xl font-bold">{isLoading ? "..." : vendors.reduce((sum, v) => sum + v.totalInvoices, 0)}</p>
           </Card>
         </div>
 
         {/* Spending Distribution */}
-        <Card className="p-6">
+        <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
           <h3 className="text-lg font-semibold mb-6">Vendor Spending Distribution</h3>
           {isLoading ? (
             <p className="text-center text-muted-foreground">Loading...</p>
@@ -100,8 +100,8 @@ const Vendors = () => {
                     </div>
                     <div className="h-2 bg-muted rounded-full overflow-hidden">
                       <div 
-                        className="h-full bg-primary transition-all duration-500"
-                        style={{ width: `${percentage}%` }}
+                        className="h-full bg-gradient-to-r from-[var(--anomaly-hsn)] to-[var(--anomaly-price)] transition-all duration-500 rounded-full"
+                        style={{ width: `${percentage}%` }} 
                       />
                     </div>
                   </div>
@@ -112,7 +112,7 @@ const Vendors = () => {
         </Card>
 
         {/* Vendor Table */}
-        <Card className="p-6">
+        <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-lg font-semibold">Vendor Performance</h3>
             <Button variant="outline">Export Report</Button>

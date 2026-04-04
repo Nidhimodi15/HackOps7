@@ -43,7 +43,7 @@ export function RoleSwitcher() {
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuLabel>Switch Role (Demo)</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {roles.map((role) => {
+        {roles.filter(role => !(user?.role === 'user' && role.value === 'admin')).map((role) => {
           const Icon = role.icon;
           return (
             <DropdownMenuItem

@@ -28,6 +28,7 @@ export interface Permissions {
 
 interface AuthContextType {
   user: User | null;
+  isLoading: boolean;
   permissions: Permissions;
   login: (email: string, password: string, role: UserRole) => void;
   logout: () => void;
@@ -72,6 +73,7 @@ const rolePermissions: Record<UserRole, Permissions> = {
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     // Check if user is logged in (from localStorage)
@@ -89,6 +91,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       setUser(defaultUser);
       localStorage.setItem('fintel_user', JSON.stringify(defaultUser));
     }
+    setIsLoading(false);
   }, []);
 
   const login = (email: string, password: string, role: UserRole) => {
@@ -115,7 +118,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, permissions, login, logout, hasPermission }}>
+    <AuthContext.Provider value={{ user, isLoading, permissions, login, logout, hasPermission }}>
       {children}
     </AuthContext.Provider>
   );

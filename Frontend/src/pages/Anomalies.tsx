@@ -134,6 +134,17 @@ const Anomalies = () => {
     return labels[type];
   };
 
+  const getAnomalyColor = (type: Anomaly["type"]) => {
+    const colors = {
+      duplicate: "text-[var(--anomaly-duplicate)]",
+      gst: "text-[var(--anomaly-gst)]",
+      hsn: "text-[var(--anomaly-hsn)]",
+      arithmetic: "text-[var(--anomaly-price)]",
+      price: "text-[var(--anomaly-price)]",
+    };
+    return colors[type] || "text-primary";
+  };
+
   const getSeverityBadge = (severity: Anomaly["severity"]) => {
     const variants = {
       high: "destructive" as const,
@@ -152,10 +163,10 @@ const Anomalies = () => {
   };
 
   const anomalyStats = [
-    { type: "gst" as const, count: anomalies.filter(a => a.type === "gst").length, label: "Invalid GST", color: "border-l-red-500" },
-    { type: "duplicate" as const, count: anomalies.filter(a => a.type === "duplicate").length, label: "Duplicates", color: "border-l-orange-500" },
-    { type: "hsn" as const, count: anomalies.filter(a => a.type === "hsn").length, label: "HSN Mismatches", color: "border-l-yellow-500" },
-    { type: "price" as const, count: anomalies.filter(a => a.type === "price").length, label: "Price Outliers", color: "border-l-blue-500" },
+    { type: "gst" as const, count: anomalies.filter(a => a.type === "gst").length, label: "Invalid GST", color: "border-l-[var(--anomaly-gst)]", bgColor: "bg-[var(--anomaly-gst)]/10", iconColor: "text-[var(--anomaly-gst)]" },
+    { type: "duplicate" as const, count: anomalies.filter(a => a.type === "duplicate").length, label: "Duplicates", color: "border-l-[var(--anomaly-duplicate)]", bgColor: "bg-[var(--anomaly-duplicate)]/10", iconColor: "text-[var(--anomaly-duplicate)]" },
+    { type: "hsn" as const, count: anomalies.filter(a => a.type === "hsn").length, label: "HSN Mismatches", color: "border-l-[var(--anomaly-hsn)]", bgColor: "bg-[var(--anomaly-hsn)]/10", iconColor: "text-[var(--anomaly-hsn)]" },
+    { type: "price" as const, count: anomalies.filter(a => a.type === "price").length, label: "Price Outliers", color: "border-l-[var(--anomaly-price)]", bgColor: "bg-[var(--anomaly-price)]/10", iconColor: "text-[var(--anomaly-price)]" },
   ];
 
   if (isLoading) {
@@ -179,7 +190,7 @@ const Anomalies = () => {
               Review and manage all flagged invoices requiring attention
             </p>
           </div>
-          <Card className="p-12">
+          <Card className="p-12 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
             <div className="text-center">
               <Shield className="h-16 w-16 mx-auto mb-4 text-muted-foreground" />
               <h3 className="text-xl font-semibold mb-2">No Anomalies Detected</h3>
@@ -238,10 +249,10 @@ const Anomalies = () => {
           {anomalyStats.map((stat) => {
             const Icon = getAnomalyIcon(stat.type);
             return (
-              <Card key={stat.type} className={`p-6 border-l-4 ${stat.color} hover:shadow-lg transition-all`}>
+              <Card key={stat.type} className={`p-6 border border-[var(--border)] border-l-4 ${stat.color} hover:shadow-lg transition-all rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm`}>
                 <div className="flex items-start gap-3">
-                  <div className="p-2 rounded-lg bg-warning/10">
-                    <Icon className="h-5 w-5 text-warning" />
+                  <div className={`p-2 rounded-lg ${stat.bgColor}`}>
+                    <Icon className={`h-5 w-5 ${stat.iconColor}`} />
                   </div>
                   <div>
                     <p className="text-sm text-muted-foreground mb-1">{stat.label}</p>
@@ -254,7 +265,7 @@ const Anomalies = () => {
         </div>
 
         {/* Vendor Risk Heatmap */}
-        <Card className="p-6">
+        <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Top Risky Vendors</h3>
           <div className="space-y-3">
             {(() => {
@@ -306,7 +317,7 @@ const Anomalies = () => {
         </Card>
 
         {/* Anomalies by Type */}
-        <Card className="p-6">
+        <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
           <Tabs defaultValue="all">
             <TabsList className="mb-6">
               <TabsTrigger value="all">All Anomalies</TabsTrigger>
@@ -336,7 +347,7 @@ const Anomalies = () => {
                       <TableRow key={anomaly.id}>
                         <TableCell>
                           <div className="flex items-center gap-2">
-                            <Icon className="h-4 w-4 text-warning" />
+                            <Icon className={`h-4 w-4 ${getAnomalyColor(anomaly.type)}`} />
                             <span className="text-sm">{getAnomalyLabel(anomaly.type)}</span>
                           </div>
                         </TableCell>
@@ -398,7 +409,7 @@ const Anomalies = () => {
       {/* Review Dialog */}
       {reviewAnomaly && (
         <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4" onClick={() => setReviewAnomaly(null)}>
-          <Card className="max-w-lg w-full p-6 space-y-4" onClick={e => e.stopPropagation()}>
+          <Card className="max-w-lg w-full p-6 space-y-4 border border-[var(--border)] rounded-[24px] bg-white dark:bg-[#1A1F2C] shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-bold">Anomaly Review</h3>
               <Button size="sm" variant="ghost" onClick={() => setReviewAnomaly(null)}>✕</Button>

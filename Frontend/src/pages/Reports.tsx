@@ -470,7 +470,7 @@ const Reports = () => {
         </div>
 
         {/* Email Report Section */}
-        <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border-blue-200">
+        <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 border border-[var(--border)] rounded-[24px] shadow-sm">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="p-3 rounded-lg bg-blue-500 text-white">
@@ -495,7 +495,7 @@ const Reports = () => {
         </Card>
 
         {/* Generate New Report */}
-        <Card className="p-6">
+        <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
           <h3 className="text-lg font-semibold mb-4">Generate New Report</h3>
           <div className="grid gap-4 md:grid-cols-5">
             <Select defaultValue="summary">
@@ -555,10 +555,10 @@ const Reports = () => {
 
         {/* Key Insights */}
         <div className="grid gap-6 md:grid-cols-3">
-          <Card className="p-6 border-l-4 border-l-primary">
+          <Card className="p-6 border border-[var(--border)] border-l-4 border-l-[var(--anomaly-hsn)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
             <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-primary/10">
-                <FileText className="h-6 w-6 text-primary" />
+              <div className="p-3 rounded-lg bg-[var(--anomaly-hsn)]/10 text-[var(--anomaly-hsn)]">
+                <FileText className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Total Invoices Processed</p>
@@ -568,10 +568,10 @@ const Reports = () => {
             </div>
           </Card>
 
-          <Card className="p-6 border-l-4 border-l-warning">
+          <Card className="p-6 border border-[var(--border)] border-l-4 border-l-[var(--anomaly-gst)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
             <div className="flex items-start gap-4">
-              <div className="p-3 rounded-lg bg-warning/10">
-                <TrendingUp className="h-6 w-6 text-warning" />
+              <div className="p-3 rounded-lg bg-[var(--anomaly-gst)]/10 text-[var(--anomaly-gst)]">
+                <TrendingUp className="h-6 w-6" />
               </div>
               <div>
                 <p className="text-sm text-muted-foreground mb-1">Total Amount Processed</p>
@@ -581,7 +581,7 @@ const Reports = () => {
             </div>
           </Card>
 
-          <Card className="p-6 border-l-4 border-l-destructive">
+          <Card className="p-6 border border-[var(--border)] border-l-4 border-l-destructive rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
             <div className="flex items-start gap-4">
               <div className="p-3 rounded-lg bg-destructive/10">
                 <CheckCircle className="h-6 w-6 text-destructive" />
@@ -596,7 +596,7 @@ const Reports = () => {
         </div>
 
         {/* Recent Reports */}
-        <Card className="p-6">
+        <Card className="p-6 border border-[var(--border)] rounded-[24px] bg-white/50 dark:bg-white/5 shadow-sm">
           <h3 className="text-lg font-semibold mb-6">Recent Reports</h3>
           <div className="space-y-4">
             {isLoading ? (
